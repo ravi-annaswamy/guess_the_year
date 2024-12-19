@@ -94,10 +94,10 @@ var country, tzname, chName, chDate, chTime, chPlace, chZone, chLon, chLat, chSt
             var centerX = x + w / 2;
             var centerY = y + h / 2;
             s += '<text x="' + centerX + '" y="' + (centerY - 20) + '" fill="black" font-size="12" font-family="monospace" text-anchor="middle">ஸ்ரீ கற்பக விநாயகர் துணை</text>\n';
-			s += '<text x="' + centerX + '" y="' + (centerY) + '" fill="black" font-size="16" font-family="monospace" text-anchor="middle">ராசி</text>\n';
+	    // s += '<text x="' + centerX + '" y="' + (centerY) + '" fill="black" font-size="16" font-family="monospace" text-anchor="middle">ராசி</text>\n';
 
             s += '<text x="' + centerX + '" y="' + (centerY + 20) + '" fill="black" font-size="16" font-family="monospace" text-anchor="middle">' + currentDate + '</text>\n';
-            s += '<text x="' + centerX + '" y="' + (centerY + 40) + '" fill="black" font-size="16" font-family="monospace" text-anchor="middle">' + currentTime + '</text>\n';
+            // s += '<text x="' + centerX + '" y="' + (centerY + 40) + '" fill="black" font-size="16" font-family="monospace" text-anchor="middle">' + currentTime + '</text>\n';
 
             s += "</g>\n";
             return s;
