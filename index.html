@@ -1,34 +1,100 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Guess the Year</title>
-<script src="js/planets.js"></script>
-<script src="js/planterms2.js"></script>
-<script src="js/app3.js"></script>
-
-<style>
+  <meta charset="UTF-8">
+  <title>Guess the Year</title>
+  <script src="js/planets.js"></script>
+  <script src="js/planterms2.js"></script>
+  <script src="js/app3.js"></script>
+  <style>
     body {
-        font-family: Arial, sans-serif;
-        padding: 20px;
+      font-family: Arial, sans-serif;
+      padding: 20px;
     }
+    /* Quiz view styling */
     #chartContainer {
-        display: inline-block;
-        vertical-align: top;
-        margin-right: 20px;
+      display: inline-block;
+      vertical-align: top;
+      margin-right: 20px;
     }
     .controls {
-        margin-top: 20px;
+      margin-top: 20px;
     }
     .hidden {
-        display: none;
+      display: none;
     }
     label, input, button {
-        margin-right: 5px;
+      margin-right: 5px;
     }
-</style>
+    /* Tutorial view styling */
+    #tutorialGrid {
+      margin-top: 20px;
+    }
+    .decadePanel {
+      border: 1px solid #ccc;
+      padding: 10px;
+      margin-bottom: 20px;
+    }
+    .tutorialRow {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .chartCell {
+      width: 140px;
+      height: 140px;
+      border: 1px solid #ddd;
+      margin: 5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    #baseYearButtons button {
+      margin-right: 5px;
+      margin-bottom: 5px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Quiz View -->
+  <div id="quizView">
+    <h1>Guess the Year</h1>
+    <label for="startYear">Start Year:</label>
+    <input type="number" id="startYear" value="1960" style="width:80px;">
+    <label for="endYear">End Year:</label>
+    <input type="number" id="endYear" value="2020" style="width:80px;">
+    <br><br>
+    <div id="chartContainer"></div>
+    <div class="controls">
+      <button id="toggleBtn">Answer</button>
+      <input type="checkbox" id="showAllPlanets"> Show all planets
+      <!-- Button to switch to the Tutorial Key view -->
+      <button id="tutorialKeyBtn">Tutorial Key</button>
+    </div>
+  </div>
 
-<script>
+  <!-- Tutorial Key View -->
+  <div id="tutorialView" class="hidden">
+    <h1>Tutorial Key</h1>
+    <!-- Base Year Selection Buttons -->
+    <div id="baseYearButtons">
+      <button class="baseYearBtn" data-year="1840">1840</button>
+      <button class="baseYearBtn" data-year="1870">1870</button>
+      <button class="baseYearBtn" data-year="1900">1900</button>
+      <button class="baseYearBtn" data-year="1930">1930</button>
+      <button class="baseYearBtn" data-year="1960">1960</button>
+      <button class="baseYearBtn" data-year="1990">1990</button>
+      <button class="baseYearBtn" data-year="2020">2020</button>
+      <button class="baseYearBtn" data-year="2050">2050</button>
+    </div>
+    <!-- Container where the grid of charts will be displayed -->
+    <div id="tutorialGrid"></div>
+    <!-- Button to return to the Quiz view -->
+    <button id="backToQuizBtn">Back to Quiz</button>
+  </div>
+
+  <script>
+    // Existing quiz code (init, startQuiz, getRandomYear, calculateAndDisplayChart, etc.)
 // Global variables
 let currentYear;
 let currentDateDisplayed = false;
@@ -147,21 +213,102 @@ function calculateDateData(year, month, day, time) {
     var t = ((jd += time / 24.0) - J2000) / 36525.0;
     return { jd: jd, t: t };
 }
-</script>
-</head>
-<body>
-    <h1>Guess the Year</h1>
-    <label for="startYear">Start Year:</label>
-    <input type="number" id="startYear" value="1960" style="width:80px;">
-    <label for="endYear">End Year:</label>
-    <input type="number" id="endYear" value="2020" style="width:80px;">
-    <br><br>
+    // --- New Code for Tutorial Key view ---
+    // Toggle between Quiz view and Tutorial Key view
+    document.getElementById('tutorialKeyBtn').addEventListener('click', showTutorialView);
+    document.getElementById('backToQuizBtn').addEventListener('click', showQuizView);
 
-    <div id="chartContainer"></div>
-    
-    <div class="controls">
-        <button id="toggleBtn">Answer</button>
-        <input type="checkbox" id="showAllPlanets"> Show all planets
-    </div>
+    function showTutorialView() {
+      document.getElementById('quizView').classList.add('hidden');
+      document.getElementById('tutorialView').classList.remove('hidden');
+      // Use default base year 1900 on first display
+      generateTutorialGrid(1900);
+    }
+
+    function showQuizView() {
+      document.getElementById('tutorialView').classList.add('hidden');
+      document.getElementById('quizView').classList.remove('hidden');
+    }
+
+    // Add event listeners to base year buttons
+    const baseYearButtons = document.querySelectorAll('.baseYearBtn');
+    baseYearButtons.forEach(btn => {
+      btn.addEventListener('click', function() {
+        const baseYear = parseInt(this.getAttribute('data-year'), 10);
+        generateTutorialGrid(baseYear);
+      });
+    });
+
+    // Generate the grid of 30 charts organized in three decade panels.
+    function generateTutorialGrid(baseYear) {
+      const tutorialGrid = document.getElementById('tutorialGrid');
+      tutorialGrid.innerHTML = ''; // Clear any previous content
+
+      // Create three panels (each representing one decade: baseYear- baseYear+9, then +10, then +20)
+      for (let panel = 0; panel < 3; panel++) {
+        const panelDiv = document.createElement('div');
+        panelDiv.classList.add('decadePanel');
+
+        // The starting year for this decade panel
+        let panelStartYear = baseYear + panel * 10;
+
+        // Each panel has 2 rows (each with 5 charts)
+        for (let row = 0; row < 2; row++) {
+          const rowDiv = document.createElement('div');
+          rowDiv.classList.add('tutorialRow');
+          // For each row, create 5 chart cells
+          for (let col = 0; col < 5; col++) {
+            let year = panelStartYear + row * 5 + col;
+            const chartCell = document.createElement('div');
+            chartCell.classList.add('chartCell');
+            // Generate the SVG chart for the given year.
+            // Use April 20 as the date and 12:00 as the time.
+            // The function getTutorialChartSVG returns an SVG content string that uses your
+            // current drawing functions to display only Jupiter, Saturn, and Rahu (in Tamil).
+            let svgContent = getTutorialChartSVG(year, 4, 20, 12, 0);
+            // Wrap the SVG content in an <svg> element sized to fit the cell.
+            chartCell.innerHTML = '<svg width="140" height="140" xmlns="http://www.w3.org/2000/svg" version="1.1">' + svgContent + '</svg>';
+            rowDiv.appendChild(chartCell);
+          }
+          panelDiv.appendChild(rowDiv);
+        }
+        tutorialGrid.appendChild(panelDiv);
+      }
+    }
+
+    // This function returns the SVG content (as a string) for a given year
+    // using the date April 20 and time 12:00. It filters the planetary positions
+    // so that only Jupiter, Saturn, and Rahu are displayed.
+    function getTutorialChartSVG(year, month, day, hour, minute) {
+      let cityName = "Chennai";
+      let cityInfo = getCityInfo(cityName);
+      if (!cityInfo) {
+          return "<text x='10' y='20'>City info not available.</text>";
+      }
+
+      // Adjust the time based on the city’s timezone.
+      let timeData = extractTimeData(hour, minute, cityInfo);
+      // Convert the date to a Julian date and calculate the time parameter.
+      let dateData = calculateDateData(year, month, day, timeData.time);
+      // Compute planetary positions for the given date.
+      let planetaryPositions = calculatePlanetaryPositions(dateData.t, timeData, cityInfo);
+      // Filter the positions to include only Jupiter, Saturn, and Rahu.
+      // (Assuming that filterTutorialPlanets is defined to do this.)
+      let filteredPositions = filterTutorialPlanets(planetaryPositions);
+      // Format the date and time (if needed)
+      let currentDate = "April 20, " + year;
+      let currentTime = formatAMPM(hour, minute);
+      // Draw the chart using your existing drawing function, but with a smaller canvas (120 x 120).
+let svgContent = drawSouthChart(0, 0, 120, 120, filteredPositions, currentDate, currentTime, "TutorialMode");
+      return svgContent;
+    }
+
+    // A helper function to filter only Jupiter, Saturn, and Rahu from the positions array.
+    // (Adjust the indices as needed based on your internal representation.)
+    function filterTutorialPlanets(positions) {
+      // For example, if Jupiter is at index 5, Saturn at 7, and Rahu at 8:
+      return positions.filter((p, idx) => [5, 7, 8].includes(idx));
+    }
+  </script>
 </body>
 </html>

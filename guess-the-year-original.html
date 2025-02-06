@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Guess the Year</title>
+<script src="js/planets.js"></script>
+<script src="js/planterms2.js"></script>
+<script src="js/app3.js"></script>
+
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        padding: 20px;
+    }
+    #chartContainer {
+        display: inline-block;
+        vertical-align: top;
+        margin-right: 20px;
+    }
+    .controls {
+        margin-top: 20px;
+    }
+    .hidden {
+        display: none;
+    }
+    label, input, button {
+        margin-right: 5px;
+    }
+</style>
+
+<script>
+// Global variables
+let currentYear;
+let currentDateDisplayed = false;
+let showAllPlanetsCheckbox;
+
+let lastPositions = null;
+let lastYear, lastMonth, lastDay, lastHour, lastMinute;
+
+// quizMode = true means currently showing ??? date, chart hidden date
+// quizMode = false means currently showing revealed date
+let quizMode = true; 
+
+document.addEventListener('DOMContentLoaded', init);
+
+function init() {
+    showAllPlanetsCheckbox = document.getElementById('showAllPlanets');
+    showAllPlanetsCheckbox.addEventListener('change', redrawCharts);
+
+    document.getElementById('toggleBtn').addEventListener('click', toggleQuizAnswer);
+
+    // Start in quiz mode
+    startQuiz();
+}
+
+function startQuiz() {
+    const startY = parseInt(document.getElementById('startYear').value, 10);
+    const endY = parseInt(document.getElementById('endYear').value, 10);
+
+    currentYear = getRandomYear(startY, endY);
+    currentDateDisplayed = false; 
+    calculateAndDisplayChart(currentYear, 4, 15, 12, 0); 
+    quizMode = true;
+    document.getElementById('toggleBtn').textContent = "Answer";
+}
+
+function getRandomYear(startYear, endYear) {
+    return Math.floor(Math.random() * (endYear - startYear + 1)) + startYear;
+}
+
+function calculateAndDisplayChart(year, month, day, hour, minute) {
+    let cityName = "Chennai"; 
+    let cityInfo = getCityInfo(cityName);
+    if (!cityInfo) {
+        alert("City information not available.");
+        return;
+    }
+
+    let timeData = extractTimeData(hour, minute, cityInfo);
+    let dateData = calculateDateData(year, month, day, timeData.time);
+    let planetaryPositions = calculatePlanetaryPositions(dateData.t, timeData, cityInfo);
+
+    let filteredPositions = filterPlanets(planetaryPositions, showAllPlanetsCheckbox.checked);
+
+    // Store global data for redraw
+    lastPositions = filteredPositions;
+    lastYear = year;
+    lastMonth = month;
+    lastDay = day;
+    lastHour = hour;
+    lastMinute = minute;
+
+    displayChart(lastPositions, lastYear, lastMonth, lastDay, lastHour, lastMinute);
+}
+
+// If showAll is false, return only Sun(1), Jupiter(5), Saturn(7), Rahu(8), Ketu(9)
+function filterPlanets(positions, showAll) {
+    if (showAll) {
+        return positions; 
+    } else {
+        return positions.filter((p, idx) => [5,7,8].includes(idx));
+    }
+}
+
+function redrawCharts() {
+    calculateAndDisplayChart(lastYear, lastMonth, lastDay, lastHour, lastMinute);
+}
+
+function toggleQuizAnswer() {
+    if (quizMode) {
+        // Currently in quiz mode, user wants Answer
+        revealDate();
+        document.getElementById('toggleBtn').textContent = "Quiz";
+        quizMode = false;
+    } else {
+        // Currently in answer mode, user wants new quiz
+        startQuiz();
+    }
+}
+
+function revealDate() {
+    if (!currentDateDisplayed) {
+        currentDateDisplayed = true;
+        displayChart(lastPositions, lastYear, lastMonth, lastDay, lastHour, lastMinute);
+    }
+}
+
+function displayChart(planetaryPositions, year, month, day, hour, minutes) {
+    var currentDate = currentDateDisplayed ? ("April 15, " + year) : "???";
+    var currentTime = formatAMPM(hour, minutes);
+    var svgContent = drawSouthChart(0, 0, 400, 400, planetaryPositions, currentDate, currentTime);
+    document.getElementById('chartContainer').innerHTML = '<svg width="400" height="400" xmlns="http://www.w3.org/2000/svg" version="1.1">' + svgContent + '</svg>';
+}
+
+// Missing functions from earlier code
+function extractTimeData(hour, minutes, cityInfo) {
+    var zoneHours = parseFloat(cityInfo.timezone.hours) + parseFloat(cityInfo.timezone.minutes / 60);
+    if (cityInfo.timezone.direction === 'E') {
+        zoneHours *= -1;
+    }
+    var time = parseFloat(hour) + parseFloat(minutes / 60) + zoneHours;
+    return { time: time, zoneHours: zoneHours };
+}
+
+function calculateDateData(year, month, day, time) {
+    var jd = date2jul(month, day, year) + 0.5;
+    var t = ((jd += time / 24.0) - J2000) / 36525.0;
+    return { jd: jd, t: t };
+}
+</script>
+</head>
+<body>
+    <h1>Guess the Year</h1>
+    <label for="startYear">Start Year:</label>
+    <input type="number" id="startYear" value="1960" style="width:80px;">
+    <label for="endYear">End Year:</label>
+    <input type="number" id="endYear" value="2020" style="width:80px;">
+    <br><br>
+
+    <div id="chartContainer"></div>
+    
+    <div class="controls">
+        <button id="toggleBtn">Answer</button>
+        <input type="checkbox" id="showAllPlanets"> Show all planets
+    </div>
+</body>
+</html>

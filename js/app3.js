@@ -61,47 +61,67 @@ var country, tzname, chName, chDate, chTime, chPlace, chZone, chLon, chLat, chSt
             {row: 0, col: 0}   // Pisces
         ];
 
-        function drawSouthChart(x, y, w, h, planetDetails, currentDate, currentTime) {
-            var mx = w / 4,  // width of each house
-                my = h / 4,  // height of each house
-                bw = w / 8;  // offset within each house for the planet text
+function drawSouthChart(x, y, w, h, planetDetails, currentDate, currentTime, mode = "QuizMode") {
+    // If in Tutorial mode, increase the size of the chart slightly.
+    if (mode === "TutorialMode") {
+        w = w + 20;
+        h = h + 20;
+    }
 
-            var s = "<g>\n";
-            var planetCounts = new Array(12).fill(0);  // This will track the number of planets in each house
+    var mx = w / 4,  // width of each house
+        my = h / 4,  // height of each house
+        bw = w / 8;  // offset within each house for the planet text
 
-            // Draw chart houses
-            housePositions.forEach((pos, index) => {
-                var xd = x + pos.col * mx,
-                    yd = y + pos.row * my;
-                s += '<rect x="' + xd + '" y="' + yd + '" width="' + mx + '" height="' + my + '" style="fill:none;stroke:black;stroke-width:2"/>\n';
-            });
+    var s = "<g>\n";
+    var planetCounts = new Array(12).fill(0);  // Track number of planets per house
 
-            // Place planets in houses based on their longitude
-            planetDetails.forEach((planet) => {
-                var houseIndex = Math.floor((planet.longitude % 360) / 30); // Calculate house index from 0 to 11
-                var position = housePositions[houseIndex];
-                var count = planetCounts[houseIndex];
-                var cellX = x + position.col * mx - 10;
-                var cellY = y + position.row * my + (count * 15);  // Adjust Y based on count of planets in the same house
-                var planetName = planet.name;
+    // Draw chart houses
+    housePositions.forEach((pos) => {
+        var xd = x + pos.col * mx,
+            yd = y + pos.row * my;
+        s += '<rect x="' + xd + '" y="' + yd + '" width="' + mx + '" height="' + my + '" style="fill:none;stroke:black;stroke-width:2"/>\n';
+    });
 
-                s += '<text x="' + (cellX + bw / 2) + '" y="' + (cellY + my / 2) + '" fill="black" font-size="14" font-family="monospace">' + planetName + '</text>\n';
+    // Place planets in houses based on their longitude
+    planetDetails.forEach((planet) => {
+        var houseIndex = Math.floor((planet.longitude % 360) / 30);
+        var position = housePositions[houseIndex];
+        var count = planetCounts[houseIndex];
+        var cellX = x + position.col * mx - 10;
+        var cellY = y + position.row * my + (count * 15);
+        var planetName = planet.name;
 
-                planetCounts[houseIndex]++;  // Increment the count of planets in the current house
-            });
+    if (mode === "QuizMode") {
 
-            // Add text in the middle of the chart
-            var centerX = x + w / 2;
-            var centerY = y + h / 2;
-            s += '<text x="' + centerX + '" y="' + (centerY - 20) + '" fill="black" font-size="12" font-family="monospace" text-anchor="middle">ஸ்ரீ கற்பக விநாயகர் துணை</text>\n';
-	    // s += '<text x="' + centerX + '" y="' + (centerY) + '" fill="black" font-size="16" font-family="monospace" text-anchor="middle">ராசி</text>\n';
+        s += '<text x="' + (cellX + bw / 2) + '" y="' + (cellY + my / 2) + '" fill="black" font-size="14" font-family="monospace">' + planetName + '</text>\n';
 
-            s += '<text x="' + centerX + '" y="' + (centerY + 20) + '" fill="black" font-size="16" font-family="monospace" text-anchor="middle">' + currentDate + '</text>\n';
-            // s += '<text x="' + centerX + '" y="' + (centerY + 40) + '" fill="black" font-size="16" font-family="monospace" text-anchor="middle">' + currentTime + '</text>\n';
+    } else if (mode === "TutorialMode") {
 
-            s += "</g>\n";
-            return s;
-        }
+        s += '<text x="' + (cellX + bw / 2) + '" y="' + (cellY + my / 2) + '" fill="black" font-size="11" font-family="monospace">' + planetName + '</text>\n';
+    }
+
+
+        planetCounts[houseIndex]++;
+    });
+
+    var centerX = x + w / 2;
+    var centerY = y + h / 2;
+    if (mode === "QuizMode") {
+        // In Quiz mode, display full date and middle texts.
+        s += '<text x="' + centerX + '" y="' + (centerY - 20) + '" fill="black" font-size="12" font-family="monospace" text-anchor="middle">ஸ்ரீ கற்பக விநாயகர் துணை</text>\n';
+        // s += '<text x="' + centerX + '" y="' + (centerY) + '" fill="black" font-size="16" font-family="monospace" text-anchor="middle">ராசி</text>\n';
+        s += '<text x="' + centerX + '" y="' + (centerY + 20) + '" fill="black" font-size="16" font-family="monospace" text-anchor="middle">' + currentDate + '</text>\n';
+        // s += '<text x="' + centerX + '" y="' + (centerY + 40) + '" fill="black" font-size="16" font-family="monospace" text-anchor="middle">' + currentTime + '</text>\n';
+    } else if (mode === "TutorialMode") {
+        // In Tutorial mode, display only the year (extracted from the full date).
+        // Assumes currentDate is in the format "April 20, 1900"
+        var yearOnly = currentDate.split(", ")[1] || currentDate;
+        s += '<text x="' + centerX + '" y="' + (centerY + 20) + '" fill="black" font-size="16" font-family="monospace" text-anchor="middle">' + yearOnly + '</text>\n';
+    }
+
+    s += "</g>\n";
+    return s;
+}
 
         function drawNavamsaChart(x, y, w, h, planetDetails) {
             var mx = w / 4,  // width of each house
