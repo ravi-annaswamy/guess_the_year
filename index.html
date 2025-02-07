@@ -78,14 +78,10 @@
     <h1>Tutorial Key</h1>
     <!-- Base Year Selection Buttons -->
     <div id="baseYearButtons">
-      <button class="baseYearBtn" data-year="1840">1840</button>
-      <button class="baseYearBtn" data-year="1870">1870</button>
-      <button class="baseYearBtn" data-year="1900">1900</button>
-      <button class="baseYearBtn" data-year="1930">1930</button>
-      <button class="baseYearBtn" data-year="1960">1960</button>
-      <button class="baseYearBtn" data-year="1990">1990</button>
-      <button class="baseYearBtn" data-year="2020">2020</button>
-      <button class="baseYearBtn" data-year="2050">2050</button>
+      <button class="baseYearBtn" data-year="1904">1904</button>
+      <button class="baseYearBtn" data-year="1939">1939</button>
+      <button class="baseYearBtn" data-year="1975">1975</button>
+      <button class="baseYearBtn" data-year="1999">1999</button>
     </div>
     <!-- Container where the grid of charts will be displayed -->
     <div id="tutorialGrid"></div>
@@ -222,7 +218,7 @@ function calculateDateData(year, month, day, time) {
       document.getElementById('quizView').classList.add('hidden');
       document.getElementById('tutorialView').classList.remove('hidden');
       // Use default base year 1900 on first display
-      generateTutorialGrid(1900);
+      generateTutorialGrid(1904);
     }
 
     function showQuizView() {
@@ -240,42 +236,37 @@ function calculateDateData(year, month, day, time) {
     });
 
     // Generate the grid of 30 charts organized in three decade panels.
-    function generateTutorialGrid(baseYear) {
-      const tutorialGrid = document.getElementById('tutorialGrid');
-      tutorialGrid.innerHTML = ''; // Clear any previous content
+function generateTutorialGrid(baseYear) {
+  const tutorialGrid = document.getElementById('tutorialGrid');
+  tutorialGrid.innerHTML = ''; // Clear previous content
 
-      // Create three panels (each representing one decade: baseYear- baseYear+9, then +10, then +20)
-      for (let panel = 0; panel < 3; panel++) {
-        const panelDiv = document.createElement('div');
-        panelDiv.classList.add('decadePanel');
+  // Create 3 panels (each for a 12-year Jupiterian cycle)
+  for (let panel = 0; panel < 3; panel++) {
+    const panelDiv = document.createElement('div');
+    panelDiv.classList.add('decadePanel'); // You can keep the same class or rename it if desired
 
-        // The starting year for this decade panel
-        let panelStartYear = baseYear + panel * 10;
+    // The starting year for this cycle panel
+    let panelStartYear = baseYear + panel * 12;
 
-        // Each panel has 2 rows (each with 5 charts)
-        for (let row = 0; row < 2; row++) {
-          const rowDiv = document.createElement('div');
-          rowDiv.classList.add('tutorialRow');
-          // For each row, create 5 chart cells
-          for (let col = 0; col < 5; col++) {
-            let year = panelStartYear + row * 5 + col;
-            const chartCell = document.createElement('div');
-            chartCell.classList.add('chartCell');
-            // Generate the SVG chart for the given year.
-            // Use April 20 as the date and 12:00 as the time.
-            // The function getTutorialChartSVG returns an SVG content string that uses your
-            // current drawing functions to display only Jupiter, Saturn, and Rahu (in Tamil).
-            let svgContent = getTutorialChartSVG(year, 4, 20, 12, 0);
-            // Wrap the SVG content in an <svg> element sized to fit the cell.
-            chartCell.innerHTML = '<svg width="140" height="140" xmlns="http://www.w3.org/2000/svg" version="1.1">' + svgContent + '</svg>';
-            rowDiv.appendChild(chartCell);
-          }
-          panelDiv.appendChild(rowDiv);
-        }
-        tutorialGrid.appendChild(panelDiv);
+    // Each panel has 2 rows of 6 charts each (total 12 years)
+    for (let row = 0; row < 2; row++) {
+      const rowDiv = document.createElement('div');
+      rowDiv.classList.add('tutorialRow');
+      for (let col = 0; col < 6; col++) {
+        let year = panelStartYear + row * 6 + col;
+        const chartCell = document.createElement('div');
+        chartCell.classList.add('chartCell');
+        // Generate the SVG chart for the given year using April 20 and 12:00.
+        // Note the updated size (140x140) and the mode flag "TutorialMode"
+        let svgContent = getTutorialChartSVG(year, 4, 20, 12, 0);
+        chartCell.innerHTML = '<svg width="140" height="140" xmlns="http://www.w3.org/2000/svg" version="1.1">' + svgContent + '</svg>';
+        rowDiv.appendChild(chartCell);
       }
+      panelDiv.appendChild(rowDiv);
     }
-
+    tutorialGrid.appendChild(panelDiv);
+  }
+}
     // This function returns the SVG content (as a string) for a given year
     // using the date April 20 and time 12:00. It filters the planetary positions
     // so that only Jupiter, Saturn, and Rahu are displayed.
