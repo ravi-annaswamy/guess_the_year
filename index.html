@@ -27,31 +27,33 @@
       margin-right: 5px;
     }
     /* Tutorial view styling */
+
+    /* Tutorial view styling */
     #tutorialGrid {
       margin-top: 20px;
     }
-    .decadePanel {
-      border: 1px solid #ccc;
-      padding: 10px;
-      margin-bottom: 20px;
-    }
+    /* Updated styles for the flipped grid layout */
     .tutorialRow {
       display: flex;
-      justify-content: space-between;
+      align-items: center;
+      border: 1px solid #ccc;
+      padding: 5px;
       margin-bottom: 10px;
+    }
+    .rowLabel {
+      width: 80px;
+      text-align: right;
+      margin-right: 10px;
+      font-weight: bold;
     }
     .chartCell {
       width: 140px;
       height: 140px;
       border: 1px solid #ddd;
-      margin: 5px;
+      margin-right: 10px;
       display: flex;
       align-items: center;
       justify-content: center;
-    }
-    #baseYearButtons button {
-      margin-right: 5px;
-      margin-bottom: 5px;
     }
   </style>
 </head>
@@ -75,13 +77,16 @@
 
   <!-- Tutorial Key View -->
   <div id="tutorialView" class="hidden">
-    <h1>Tutorial Key</h1>
+    <h3>கிரகங்களிலிருந்து வருடம் கண்டுபிடிக்க உதவும்</h3>
+    <h2>குரு சக்கிரம்</h2>
+    <p> கொடுக்கப்பட்ட ஜாதகத்தில் குரு நின்ற வீட்டைக் கண்டறியவும். (வரிசையின் பெயர்.)
+        ஜாதகத்தில் சனி நின்ற வீட்டைக் கண்டறியவும். வரிசையில் இட வலமாக தேடவும்.
+        ராகு நிலை மாறுபட்டு இருந்தால் அடுத்த அறுபது ஆண்டுகளில் தேடவும்.</p>
     <!-- Base Year Selection Buttons -->
     <div id="baseYearButtons">
       <button class="baseYearBtn" data-year="1904">1904</button>
-      <button class="baseYearBtn" data-year="1939">1939</button>
-      <button class="baseYearBtn" data-year="1975">1975</button>
-      <button class="baseYearBtn" data-year="1999">1999</button>
+      <button class="baseYearBtn" data-year="1963">1963</button>
+      <button class="baseYearBtn" data-year="2023">2023</button>
     </div>
     <!-- Container where the grid of charts will be displayed -->
     <div id="tutorialGrid"></div>
@@ -90,6 +95,14 @@
   </div>
 
   <script>
+
+    // Array of Tamil zodiac names for the 12 houses.
+    const zodiacNames = [
+      "மேஷம்", "ரிஷபம்", "மிதுனம்", "கடகம்", "சிம்மம்",
+      "கன்னி", "துலாம்", "விருச்சிகம்", "தனுசு", "மகரம்",
+      "கும்பம்", "மீனம்"
+    ];
+
     // Existing quiz code (init, startQuiz, getRandomYear, calculateAndDisplayChart, etc.)
 // Global variables
 let currentYear;
@@ -235,38 +248,41 @@ function calculateDateData(year, month, day, time) {
       });
     });
 
-    // Generate the grid of 30 charts organized in three decade panels.
-function generateTutorialGrid(baseYear) {
-  const tutorialGrid = document.getElementById('tutorialGrid');
-  tutorialGrid.innerHTML = ''; // Clear previous content
+    // Function to generate the tutorial grid based on a given base year.
+    function generateTutorialGrid(baseYear) {
+      const tutorialGrid = document.getElementById('tutorialGrid');
+      tutorialGrid.innerHTML = ''; // Clear previous content
 
-  // Create 3 panels (each for a 12-year Jupiterian cycle)
-  for (let panel = 0; panel < 3; panel++) {
-    const panelDiv = document.createElement('div');
-    panelDiv.classList.add('decadePanel'); // You can keep the same class or rename it if desired
+      // For each of the 12 zodiac rows:
+      for (let row = 0; row < 12; row++) {
+        // Create a row container with a border
+        const rowPanel = document.createElement('div');
+        rowPanel.classList.add('tutorialRow');
 
-    // The starting year for this cycle panel
-    let panelStartYear = baseYear + panel * 12;
+        // Create and append the left label cell with the Tamil zodiac name.
+        const labelCell = document.createElement('div');
+        labelCell.classList.add('rowLabel');
+        labelCell.textContent = zodiacNames[row];
+        rowPanel.appendChild(labelCell);
 
-    // Each panel has 2 rows of 6 charts each (total 12 years)
-    for (let row = 0; row < 2; row++) {
-      const rowDiv = document.createElement('div');
-      rowDiv.classList.add('tutorialRow');
-      for (let col = 0; col < 6; col++) {
-        let year = panelStartYear + row * 6 + col;
-        const chartCell = document.createElement('div');
-        chartCell.classList.add('chartCell');
-        // Generate the SVG chart for the given year using April 20 and 12:00.
-        // Note the updated size (140x140) and the mode flag "TutorialMode"
-        let svgContent = getTutorialChartSVG(year, 4, 20, 12, 0);
-        chartCell.innerHTML = '<svg width="140" height="140" xmlns="http://www.w3.org/2000/svg" version="1.1">' + svgContent + '</svg>';
-        rowDiv.appendChild(chartCell);
+        // For each of the 5 cycles (columns):
+        for (let cycle = 0; cycle < 5; cycle++) {
+          // Compute the year: baseYear + row offset + (cycle * 12)
+          const year = baseYear + row + (cycle * 12);
+          const chartCell = document.createElement('div');
+          chartCell.classList.add('chartCell');
+
+          // Generate the SVG chart for the computed year (using April 20 and 12:00).
+          const svgContent = getTutorialChartSVG(year, 4, 20, 12, 0);
+          chartCell.innerHTML = '<svg width="140" height="140" xmlns="http://www.w3.org/2000/svg" version="1.1">'
+                                + svgContent + '</svg>';
+          rowPanel.appendChild(chartCell);
+        }
+
+        tutorialGrid.appendChild(rowPanel);
       }
-      panelDiv.appendChild(rowDiv);
     }
-    tutorialGrid.appendChild(panelDiv);
-  }
-}
+
     // This function returns the SVG content (as a string) for a given year
     // using the date April 20 and time 12:00. It filters the planetary positions
     // so that only Jupiter, Saturn, and Rahu are displayed.
